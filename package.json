@@ -1,0 +1,36 @@
+{
+  "name": "auth-exercise-v3",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "bcrypt": "^5.0.1",
+    "cookie-parser": "^1.4.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-flash": "^0.0.2",
+    "express-session": "^1.17.2",
+    "knex": "^0.95.10",
+    "mysql2": "^2.3.0",
+    "nodemon": "^2.0.12",
+    "objection": "^2.2.15",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "nodemon server/express.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ginazampino/auth-exercise-v3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ginazampino/auth-exercise-v3/issues"
+  },
+  "homepage": "https://github.com/ginazampino/auth-exercise-v3#readme"
+}
