@@ -10,6 +10,9 @@
                 <input id="email" type="text" placeholder="Email address">
             </div>
             <div>
+                <input id="username" type="text" placeholder="Username">
+            </div>
+            <div>
                 <input id="password" type="password" placeholder="Password">
             </div>
             <!-- <div>
@@ -29,12 +32,14 @@
             e.preventDefault();
 
             let emailInput = document.getElementById('email').value;
+            let usernameInput = document.getElementById('username').value;
             let passwordInput = document.getElementById('password').value;
             
             console.log('Email: ' + emailInput);
+            console.log('Username: ' + usernameInput);
             console.log('Password: ' + passwordInput);
 
-            axios.post('/debug/register', { email: emailInput, password: passwordInput });
+            axios.post('/debug/register', { email: emailInput, username: usernameInput, password: passwordInput });
         });
     </script>
 </html>
