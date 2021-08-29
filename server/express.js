@@ -9,7 +9,6 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const passport = require('passport');
 const { Model } = require('objection');
 const Knex = require('knex');
 const bcrypt = require('bcrypt');
@@ -30,8 +29,6 @@ app.use(session({
     resave: true,
     saveUninitialized: true
 }));
-app.use(passport.initialize());
-app.use(passport.session());
 
 /* =============================================================
 
@@ -64,7 +61,7 @@ class User extends Model {
 
    ============================================================= */
 
-function validate(formData) {
+function validateRegistration(formData) {
     let validated = null;
     let validEmail = typeof formData.email == 'string' && formData.email.trim() != '';
     let validUsername = typeof formData.username == 'string' && formData.username.trim() != '';
@@ -78,6 +75,20 @@ function validate(formData) {
         return validated;
     };
 };
+
+function validateLogin(formData) {
+    let validated = null;
+    let validEmail = typeof formData.email == 'string' && formData.email.trim() != '';
+    let validPassword = typeof formData.password == 'string' && formData.password.trim() != '';
+
+    if (validEmail && validPassword) {
+        validated = true;
+        return validated; 
+    } else {
+        validated = false;
+        return validated;
+    };
+}
 
 /* =============================================================
 
@@ -98,7 +109,7 @@ app.get('/register', (req, res) => {
 });
 
                 // Must be async here.
-app.post('/debug/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     console.log('Debugging: ' + req.body.email); // Don't forget "body".
 
              // Await here.
@@ -112,25 +123,21 @@ app.post('/debug/login', async (req, res) => {
 
 app.post('/debug/register', async (req, res) => {
     // Pass in the POST request and validate it inside the validate() function.
-    if (validate(req.body)) { // If the function returns "true", do the following:
+    if (validateRegistration(req.body)) { // If the function returns "true", do the following:
         // console.log('✓  Validated registration form data.');
-
         // Check the database for the requested email address to see if it's already in use:
         const email = await User.query()
             .select('userEmail')
             .where('userEmail', req.body.email)
             .first();
-
         // Check the database for the requested username to see if it's already in use:
         const username = await User.query()
             .select('userName')
             .where('userName', req.body.username)
             .first();
-
         // If both the username and email address are available, do the following:
         if (!email && !username) {
             // console.log('✓  Requested email address is available: ' + req.body.email);
-
             // Insert the following data into the "users" table:
             await knex('users').insert({
                 userName: req.body.username,
@@ -138,7 +145,6 @@ app.post('/debug/register', async (req, res) => {
                 userPassword: await bcrypt.hash(req.body.password, 10), // Has the password with Bcrypt.
                 createdAt: new Date().toISOString().slice(0, 19).replace('T', ' ') // Create a proper DATETIME string.
             });
-
             console.log('✓  Requested new user.')
         } else {
             if (email) {
@@ -149,17 +155,29 @@ app.post('/debug/register', async (req, res) => {
                 console.log('✗  Username unavailable.');
             };
         };
-
         // If everything is OK, do the following:
         res.json({ message: 'Registered user.' });
     } else {
         // console.log('✗  Registration form data is invalid.');
-
         // If the username, email address, and/or password is invalid (i.e. missing, empty), do the following:
         res.json({ message: 'Cannot register user.' });
     };
 });
 
+app.post('/debug/login', async (req, res) => {
+    if (validateLogin(req.body)) {
+        const user = await User.query().where('userEmail', req.body.email);
+
+        bcrypt.compare(req.body.password, user[0].userPassword)
+            .then((result) => { // if "res" it will override post res.
+                res.json({ result });
+                console.log('Password match: ' + result);
+            });
+    } else {
+        console.log('Invalid login attempt.');
+        res.json('Failed');
+    };
+});
 
 /* =============================================================
 
