@@ -38,8 +38,8 @@ app.use(passport.session());
 
    ============================================================= */
 
-const knex = Knex({
-    client: 'mysql2',
+const knex = Knex({ // Pay attention to caps.
+    client: 'mysql2', // Make sure "2" is added since it's a different package from "mysql".
     connection: {
         host : 'localhost',
         user : process.env.DB_USERNAME,
@@ -56,16 +56,6 @@ class User extends Model {
         return 'users' // The name of the table.
     };
 };
-
-async function test() { // Must be asynchronous.
-    const test = await User.query()
-        .where('userEmail', 'seahorror@gmail.com')
-        .orderBy('id');
-    
-    console.log(test)
-};
-
-//test();
 
 /* =============================================================
 
@@ -85,15 +75,17 @@ app.get('/register', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../pages/register.html'));
 });
 
+                // Must be async here.
 app.post('/debug/login', async (req, res) => {
-    console.log('Debugging: ' + req.body.email);
+    console.log('Debugging: ' + req.body.email); // Don't forget "body".
 
+             // Await here.
     const user = await User.query()
         .select('userName')
         .where('userEmail', req.body.email)
         .orderBy('id');
     
-    console.log(user[0].userName)
+    console.log(user[0].userName) // Returns an array, so can use [0] to just get the data.
 });
 
 /* =============================================================
