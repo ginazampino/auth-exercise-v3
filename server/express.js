@@ -23,12 +23,11 @@ const router = express.Router();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.resolve(__dirname, '../')));
+app.use(express.static(path.resolve(__dirname, '../pages')));
 app.use(session({ 
     secret: process.env.SESSION_SECRET,
     resave: true,
-    saveUninitialized: true,
-    cookie: { maxAge: 60000 }
+    saveUninitialized: true
 }));
 app.use(passport.initialize());
 app.use(passport.session());
@@ -53,15 +52,16 @@ const knex = Knex({
 Model.knex(knex);
 
 class User extends Model {
-    static get tableName() {
-        return 'users'
+    static get tableName() { // Must be "tableName()".
+        return 'users' // The name of the table.
     };
 };
 
 async function test() {
     const test = await User.query()
-    .where('userEmail', 'seahorror@gmail.com')
-    .orderBy('id');
+        .where('userEmail', 'seahorror@gmail.com')
+        .orderBy('id');
+    
     console.log(test)
 };
 
