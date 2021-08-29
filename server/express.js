@@ -10,10 +10,10 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
-const app = express();
 const { Model } = require('objection');
 const Knex = require('knex');
-const router = express.Router();
+const app = express();
+
 
 /* =============================================================
 
@@ -49,7 +49,7 @@ const knex = Knex({
     pool: { min: 0, max: 5 }
 })
 
-Model.knex(knex);
+Model.knex(knex); // Objection consumes Knex.
 
 class User extends Model {
     static get tableName() { // Must be "tableName()".
@@ -57,7 +57,7 @@ class User extends Model {
     };
 };
 
-async function test() {
+async function test() { // Must be asynchronous.
     const test = await User.query()
         .where('userEmail', 'seahorror@gmail.com')
         .orderBy('id');
@@ -65,7 +65,7 @@ async function test() {
     console.log(test)
 };
 
-test();
+//test();
 
 /* =============================================================
 
@@ -73,20 +73,27 @@ test();
 
    ============================================================= */
 
-router.get('/', (req, res) => {
+app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../pages/index.html'));
 });
 
-router.get('/login', (req, res) => {
+app.get('/login', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../pages/login.html'));
 });
 
-router.post('/debug/login', (req, res) => {
-    
+app.get('/register', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../pages/register.html'));
 });
 
-router.get('/register', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../pages/register.html'));
+app.post('/debug/login', async (req, res) => {
+    console.log('Debugging: ' + req.body.email);
+
+    const user = await User.query()
+        .select('userName')
+        .where('userEmail', req.body.email)
+        .orderBy('id');
+    
+    console.log(user[0].userName)
 });
 
 /* =============================================================
