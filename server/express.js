@@ -59,6 +59,27 @@ class User extends Model {
 
 /* =============================================================
 
+    Functions
+
+   ============================================================= */
+
+function validate(formData) {
+    let validated = null;
+
+    let validEmail = typeof formData.email == 'string' && formData.email.trim() != '';
+    let validPassword = typeof formData.password == 'string' && formData.password.trim() != '';
+
+    if (validEmail && validPassword) {
+        validated = true;
+        return validated; 
+    } else {
+        validated = false;
+        return validated;
+    }
+};
+
+/* =============================================================
+
     Routes
 
    ============================================================= */
@@ -83,10 +104,32 @@ app.post('/debug/login', async (req, res) => {
     const user = await User.query()
         .select('userName')
         .where('userEmail', req.body.email)
-        .orderBy('id');
+        .first();
     
-    console.log(user[0].userName) // Returns an array, so can use [0] to just get the data.
+    console.log(user[0].userName) // Returns array, so use [0] to get the data.
 });
+
+app.post('/debug/register', async (req, res) => {
+    if (validate(req.body)) {
+        console.log('✓  Validated registration form data.');
+        res.json({ message: 'Valid request.' });
+
+        const user = await User.query()
+            .select('userEmail')
+            .where('userEmail', req.body.email)
+            .first();
+
+        if (user == null) {
+            console.log('✓  Requested email address is available.');
+        } else {
+            console.log('✗  Requested email address is unavailable.');
+        };
+    } else if (!validate(req.body)) {
+        console.log('✗  Registration form data is invalid.');
+        res.json({ message: 'Invalid request.' });
+    };
+});
+
 
 /* =============================================================
 
@@ -94,8 +137,8 @@ app.post('/debug/login', async (req, res) => {
 
    ============================================================= */
 
-const test = require('./routes/test');
-app.use('/test', test); // "/" is the route of "/test".
+// const test = require('./routes/test');
+// app.use('/test', test);
 
 /* =============================================================
 

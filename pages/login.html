@@ -10,7 +10,7 @@
                 <input id="email" type="text" placeholder="Email address">
             </div>
             <div>
-                <input type="password" placeholder="Password">
+                <input id="password" type="password" placeholder="Password">
             </div>
             <button id="login" type="submit">
                 Log in
@@ -21,14 +21,18 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         const login = document.getElementById('login');
-        
 
         login.addEventListener('click', function(e) {
-            const emailInput = document.getElementById('email').value;
-            console.log(email);
-
             e.preventDefault();
-            axios.post('/debug/login', { email: emailInput });
+
+            const emailInput = document.getElementById('email').value;
+            const passwordInput = document.getElementById('password').value;
+            
+            console.log('Email: ' + emailInput);
+            console.log('Password: ' + passwordInput);
+
+            // axios.post('/debug/login', { email: emailInput });
+            axios.post('/test/sign-up', { email: emailInput, password: passwordInput });
         });
     </script>
 </html>

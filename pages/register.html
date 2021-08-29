@@ -5,20 +5,36 @@
     </head>
     <body>
         <h1>Register</h1>
-        <form action="/api/login" method="POST">
+        <form id="register">
             <div>
-                <input type="text" placeholder="Email address">
+                <input id="email" type="text" placeholder="Email address">
             </div>
             <div>
-                <input type="password" placeholder="Password">
+                <input id="password" type="password" placeholder="Password">
             </div>
-            <div>
+            <!-- <div>
                 <input type="password" placeholder="Confirm password">
-            </div>
-            <button type="submit">
+            </div> -->
+            <button id="formButton" type="submit">
                 Register
             </button>
         </form>
         <a href="/login">Log in</a> | <a href="/">Go home</a>
     </body>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        let button = document.getElementById('formButton');
+
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            let emailInput = document.getElementById('email').value;
+            let passwordInput = document.getElementById('password').value;
+            
+            console.log('Email: ' + emailInput);
+            console.log('Password: ' + passwordInput);
+
+            axios.post('/debug/register', { email: emailInput, password: passwordInput });
+        });
+    </script>
 </html>
