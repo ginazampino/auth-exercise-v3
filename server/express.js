@@ -13,9 +13,6 @@ const cookieParser = require('cookie-parser');
 const { Model } = require('objection');
 const Knex = require('knex');
 const bcrypt = require('bcrypt');
-const { match } = require('assert');
-const e = require('express');
-const { emitWarning } = require('process');
 const app = express();
 
 /* =============================================================
