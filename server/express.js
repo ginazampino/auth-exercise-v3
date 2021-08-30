@@ -193,10 +193,13 @@ app.post('/debug/register', async (req, res) => {
 });
 
 app.post('/debug/login', async (req, res) => {
+    // If the form data contains valid strings...
     if(validateData(req.body)) {
+        // ...retrieve the user's profile information from the database...
         findUserByEmail(req.body.email)
             .then((result) => {
                 console.log('Found a user.');
+                // ...and confirm whether or not the passwords are a match.
                 comparePasswords(req.body.password, result.userPassword)
                     .then((result) => {
                         if(result) {
@@ -210,7 +213,7 @@ app.post('/debug/login', async (req, res) => {
         console.log('BAD')
     };
 
-    res.json('Done')
+    res.json('GOOD')
 });  
 
 /* =============================================================
