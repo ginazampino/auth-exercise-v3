@@ -15,6 +15,7 @@ const Knex = require('knex');
 const bcrypt = require('bcrypt');
 const { match } = require('assert');
 const e = require('express');
+const { emitWarning } = require('process');
 const app = express();
 
 /* =============================================================
@@ -64,34 +65,33 @@ class User extends Model {
 
    ============================================================= */
 
-function validateRegistration(formData) {
-    let validated = null;
-    let validEmail = typeof formData.email == 'string' && formData.email.trim() != '';
-    let validUsername = typeof formData.username == 'string' && formData.username.trim() != '';
-    let validPassword = typeof formData.password == 'string' && formData.password.trim() != '';
+/*
 
-    if (validEmail && validUsername && validPassword) {
-        validated = true;
-        return validated; 
-    } else {
-        validated = false;
-        return validated;
-    };
+    validateData() takes a "req.body" object as an argument,
+    then converts that object into an array of only the values.
+    Then, using Array.some, it tests each value against being
+    an empty string, or not a string at all. Finally, it 
+    returns either true or false.
+
+    This function will be able to validate any length of form
+    data, so it's reusable.
+
+*/
+
+function validateData(data) {
+    return strings = Object.values(data).some((string) => {
+        return (string.trim() != '') && typeof string == 'string'
+    })
 };
 
-function validateLogin(formData) {
-    let validated = null;
-    let validEmail = typeof formData.email == 'string' && formData.email.trim() != '';
-    let validPassword = typeof formData.password == 'string' && formData.password.trim() != '';
-
-    if (validEmail && validPassword) {
-        validated = true;
-        return validated; 
-    } else {
-        validated = false;
-        return validated;
-    };
-}
+async function comparePasswords(password, hash) {
+    await bcrypt.compare(password, hash)
+        .then((result) => { 
+            return result; 
+        }).catch((err) => {
+            throw err;
+        });
+};
 
 /* =============================================================
 
@@ -168,74 +168,16 @@ app.post('/debug/register', async (req, res) => {
 });
 
 app.post('/debug/login', async (req, res) => {
-    const validated = validateLogin(req.body);
-    console.log(req.body);
-    console.log(validated);
-    const email = (req.body.email);
-    console.log(typeof email);
 
-    async function confirmPassword() {
-        if (validated) {
-            const user = await User.query().where('userEmail', email).first();
-            console.log(user);
-
-            // const email = user[0].userEmail;
-            // const password = user[0].userPassword;
-
-            // const comparison = await bcrypt.compare(email, password)
-            //     .then((result) => { return result; })
-            //     .catch((err) => {
-            //         throw err;
-            //     });
-
-            // return comparison;
-        } else {
-            return 'Not valid'
-        }
-    }
-
-    confirmPassword()
+    console.log(validateData(req.body));
+    res.json('Done')
     
-    // let confirmation = confirmPassword();
-    // console.log(confirmation);
+    // const myPromise = new Promise(function(resolve, reject) {
+    //     resolve(10);
+    // });
 
-    res.send('OK')
-    // 
-    // let matched = null;
-
-    // if (validated) {
-    //     const user = await User.query().where('userEmail', req.body.email);
-    //     const email = user[0].userEmail;
-    //     const password = user[0].userPassword;
-    //     const match = await bcrypt.compare(email, password)
-    //         .then((result) => { return result; });
-        
-    //     matched = match;
-    // };
-
-    // if (matched) {
-    //     console.log('A match')
-    //     res.send('OK')
-    // }
-
-    //     bcrypt.compare(email, password)
-    //         .then((result) => { // Log result to see boolean.
-    //             if (result) {
-    //                 console.log('User ID: ' + user[0].id);
-                    
-    //                 res.cookie('userId', user[0].id, {
-    //                     httpOnly: true,
-    //                     signed: true,
-    //                     // secure: true
-    //                 });
-    //             } else {
-    //                 res.send('BAD') // Password doesn't match.
-    //             };
-    //         });
-    // } else {
-    //     res.json('Failed');
-    // };
-});
+    // console.log(myPromise);
+});  
 
 /* =============================================================
 
