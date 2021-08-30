@@ -84,24 +84,39 @@ function validateData(data) {
     });
 };
 
+/*
+
+    findUserByEmail() takes "req.body.email" as a string argument,
+    then performs an Objection query, searching the "user" table for
+    a row where the value in the "userEmail" column matches that of
+    the functions argument, "req.body.email". Then, it returns the
+    entire user profile as an object.
+
+*/
+
 async function findUserByEmail(email) {
     return await User.query().where('userEmail', email).first();
 };
+
+/*
+
+    comparePasswords() takes two arguments, in any order. First,
+    it accepts the password submitted through "req.body.password".
+    Second, it accepts the hashed password found within the database.
+    When used in conjunction with findUsersByEmail(), this would be
+    "result.userPassword". Inside the function, Bcrypt is used to
+    compare the password to the hashed password. Finally, the function
+    returns a value of either true or false, which indicates whether 
+    or not the password submitted by the user matches what's registered
+    inside the database.
+
+*/
 
 async function comparePasswords(password, hash) {
     return await bcrypt.compare(password, hash)
         .then((result) => { return result; });
 };
 
-// async function comparePasswords(password, hash) {
-//     await bcrypt.compare(password, hash)
-//         .then((result) => { 
-//             return result; 
-//             console.log(result);
-//         }).catch((err) => {
-//             throw err;
-//         });
-// };
 
 /* =============================================================
 
