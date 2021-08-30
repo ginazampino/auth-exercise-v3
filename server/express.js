@@ -90,10 +90,7 @@ async function findUserByEmail(email) {
 
 async function comparePasswords(password, hash) {
     return await bcrypt.compare(password, hash)
-        .then((result) => {
-            console.log(result);
-            return result;
-        });
+        .then((result) => { return result; });
 };
 
 // async function comparePasswords(password, hash) {
@@ -188,9 +185,9 @@ app.post('/debug/login', async (req, res) => {
                 comparePasswords(req.body.password, result.userPassword)
                     .then((result) => {
                         if(result) {
-                            console.log('Matched passwords.');
+                            console.log('Matched both passwords.');
                         } else {
-                            console.log('No match.');
+                            console.log('Failed to match passwords.');
                         };
                     });
             });
