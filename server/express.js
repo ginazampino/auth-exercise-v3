@@ -81,17 +81,30 @@ class User extends Model {
 function validateData(data) {
     return strings = Object.values(data).some((string) => {
         return (string.trim() != '') && typeof string == 'string'
-    })
+    });
+};
+
+async function findUserByEmail(email) {
+    return await User.query().where('userEmail', email).first();
 };
 
 async function comparePasswords(password, hash) {
-    await bcrypt.compare(password, hash)
-        .then((result) => { 
-            return result; 
-        }).catch((err) => {
-            throw err;
+    return await bcrypt.compare(password, hash)
+        .then((result) => {
+            console.log(result);
+            return result;
         });
 };
+
+// async function comparePasswords(password, hash) {
+//     await bcrypt.compare(password, hash)
+//         .then((result) => { 
+//             return result; 
+//             console.log(result);
+//         }).catch((err) => {
+//             throw err;
+//         });
+// };
 
 /* =============================================================
 
@@ -168,15 +181,24 @@ app.post('/debug/register', async (req, res) => {
 });
 
 app.post('/debug/login', async (req, res) => {
+    if(validateData(req.body)) {
+        findUserByEmail(req.body.email)
+            .then((result) => {
+                console.log('Found a user.');
+                comparePasswords(req.body.password, result.userPassword)
+                    .then((result) => {
+                        if(result) {
+                            console.log('Matched passwords.');
+                        } else {
+                            console.log('No match.');
+                        };
+                    });
+            });
+    } else {
+        console.log('BAD')
+    };
 
-    console.log(validateData(req.body));
     res.json('Done')
-    
-    // const myPromise = new Promise(function(resolve, reject) {
-    //     resolve(10);
-    // });
-
-    // console.log(myPromise);
 });  
 
 /* =============================================================
