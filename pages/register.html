@@ -7,13 +7,13 @@
         <h1>Register</h1>
         <form id="register">
             <div>
-                <input id="email" type="text" placeholder="Email address">
+                <input id="email" type="email" placeholder="Email address" required>
             </div>
             <div>
-                <input id="username" type="text" placeholder="Username">
+                <input id="username" type="text" placeholder="Username" required>
             </div>
             <div>
-                <input id="password" type="password" placeholder="Password">
+                <input id="password" type="password" placeholder="Password" required>
             </div>
             <!-- <div>
                 <input type="password" placeholder="Confirm password">
@@ -26,6 +26,8 @@
     </body>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        axios.defaults.withCredentials = true;
+        
         let button = document.getElementById('formButton');
 
         button.addEventListener('click', function(e) {

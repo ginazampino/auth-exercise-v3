@@ -9,11 +9,13 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const cookieParser = require('cookie-parser');
 const { Model } = require('objection');
 const Knex = require('knex');
 const bcrypt = require('bcrypt');
+const { match } = require('assert');
+const e = require('express');
 const app = express();
-
 
 /* =============================================================
 
@@ -25,10 +27,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.resolve(__dirname, '../pages')));
 app.use(session({ 
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.COOKIE_SECRET,
     resave: true,
     saveUninitialized: true
 }));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
 /* =============================================================
 
@@ -165,18 +168,73 @@ app.post('/debug/register', async (req, res) => {
 });
 
 app.post('/debug/login', async (req, res) => {
-    if (validateLogin(req.body)) {
-        const user = await User.query().where('userEmail', req.body.email);
+    const validated = validateLogin(req.body);
+    console.log(req.body);
+    console.log(validated);
+    const email = (req.body.email);
+    console.log(typeof email);
 
-        bcrypt.compare(req.body.password, user[0].userPassword)
-            .then((result) => { // if "res" it will override post res.
-                res.json({ result });
-                console.log('Password match: ' + result);
-            });
-    } else {
-        console.log('Invalid login attempt.');
-        res.json('Failed');
-    };
+    async function confirmPassword() {
+        if (validated) {
+            const user = await User.query().where('userEmail', email).first();
+            console.log(user);
+
+            // const email = user[0].userEmail;
+            // const password = user[0].userPassword;
+
+            // const comparison = await bcrypt.compare(email, password)
+            //     .then((result) => { return result; })
+            //     .catch((err) => {
+            //         throw err;
+            //     });
+
+            // return comparison;
+        } else {
+            return 'Not valid'
+        }
+    }
+
+    confirmPassword()
+    
+    // let confirmation = confirmPassword();
+    // console.log(confirmation);
+
+    res.send('OK')
+    // 
+    // let matched = null;
+
+    // if (validated) {
+    //     const user = await User.query().where('userEmail', req.body.email);
+    //     const email = user[0].userEmail;
+    //     const password = user[0].userPassword;
+    //     const match = await bcrypt.compare(email, password)
+    //         .then((result) => { return result; });
+        
+    //     matched = match;
+    // };
+
+    // if (matched) {
+    //     console.log('A match')
+    //     res.send('OK')
+    // }
+
+    //     bcrypt.compare(email, password)
+    //         .then((result) => { // Log result to see boolean.
+    //             if (result) {
+    //                 console.log('User ID: ' + user[0].id);
+                    
+    //                 res.cookie('userId', user[0].id, {
+    //                     httpOnly: true,
+    //                     signed: true,
+    //                     // secure: true
+    //                 });
+    //             } else {
+    //                 res.send('BAD') // Password doesn't match.
+    //             };
+    //         });
+    // } else {
+    //     res.json('Failed');
+    // };
 });
 
 /* =============================================================
