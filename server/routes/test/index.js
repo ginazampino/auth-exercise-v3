@@ -21,7 +21,7 @@ function validate(formData) {
     }
 };
 
-router.post('/sign-up', (req, res) => {
+router.post('/test', (req, res) => {
     if (validate(req.body)) {
         console.log('Validated registration form data.');
         res.json({ message: 'Valid' });

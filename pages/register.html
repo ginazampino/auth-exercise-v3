@@ -2,22 +2,41 @@
 <html>
     <head>
         <title>Register</title>
+        <style>
+            .error {
+                color: red;
+                margin: 0;
+                padding: 0;
+                display: none;
+            }
+
+            .hide {
+                display: none;
+            }
+        </style>
     </head>
     <body>
         <h1>Register</h1>
         <form id="register">
             <div>
+                <p id="emailError" class="error ">Email is already taken.</p>
                 <input id="email" type="email" placeholder="Email address" required>
             </div>
             <div>
+                <p id="usernameError" class="error ">Username is already taken.</p>
                 <input id="username" type="text" placeholder="Username" required>
             </div>
             <div>
+                <p id="emailError" class="error ">Passwords don't match.</p>
                 <input id="password" type="password" placeholder="Password" required>
             </div>
-            <!-- <div>
-                <input type="password" placeholder="Confirm password">
-            </div> -->
+            <div>
+                <input id="confirm" type="password" placeholder="Confirm password" required>
+            </div>
+            <div>
+                <p id="emailError" class="error ">Invalid friend code.</p>
+                <input id="code" type="number" placeholder="Friend code" required>
+            </div>
             <button id="formButton" type="submit">
                 Register
             </button>
@@ -27,7 +46,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
         axios.defaults.withCredentials = true;
-        
+
         let button = document.getElementById('formButton');
 
         button.addEventListener('click', function(e) {
@@ -36,12 +55,16 @@
             let emailInput = document.getElementById('email').value;
             let usernameInput = document.getElementById('username').value;
             let passwordInput = document.getElementById('password').value;
-            
-            console.log('Email: ' + emailInput);
-            console.log('Username: ' + usernameInput);
-            console.log('Password: ' + passwordInput);
+            let confirmInput = document.getElementById('confirm').value;
+            let codeInput = document.getElementById('code').value;
 
-            axios.post('/debug/register', { email: emailInput, username: usernameInput, password: passwordInput });
+            axios.post('/debug/register', { 
+                email: emailInput, 
+                username: usernameInput, 
+                password: passwordInput,
+                confirm: confirmInput,
+                code: codeInput
+            });
         });
     </script>
 </html>

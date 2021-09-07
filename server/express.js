@@ -13,6 +13,7 @@ const cookieParser = require('cookie-parser');
 const { Model } = require('objection');
 const Knex = require('knex');
 const bcrypt = require('bcrypt');
+const cors = require('cors');
 const app = express();
 
 /* =============================================================
@@ -30,6 +31,9 @@ app.use(session({
     saveUninitialized: true
 }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(cors({
+    credentials: true
+}));
 
 /* =============================================================
 
@@ -92,8 +96,35 @@ function validateData(data) {
 */
 
 async function findUserByEmail(email) {
-    return await User.query().where('userEmail', email).first();
+    let profile = await User.query().where('userEmail', email).first();
+    return profile;
 };
+
+/*
+
+    findUserByUsername() takes "req.body.username" as a string argument,
+    then performs an Objection query, searching the "user" table for
+    a row where the value in the "userName" column matches that of
+    the functions argument, "req.body.username". Then, it returns the
+    entire user profile as an object.
+
+*/
+
+async function findUserByUsername(username) {
+    let profile = await User.query().where('userName', username).first();
+    return profile;
+};
+
+/*
+
+    findUserByCode();
+
+*/
+
+async function findUserByCode(code) {
+    let profile = await User.query().where('friendCode', code).first();
+    return profile;
+}
 
 /*
 
@@ -133,84 +164,76 @@ app.get('/register', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../pages/register.html'));
 });
 
-                // Must be async here.
 app.post('/api/login', async (req, res) => {
-    console.log('Debugging: ' + req.body.email); // Don't forget "body".
+    console.log('Debugging: ' + req.body.email);
 
-             // Await here.
-    const user = await User.query()
+    const user = await User.query() // An array: user[0].username
         .select('userName')
         .where('userEmail', req.body.email)
         .first();
     
-    console.log(user[0].userName) // Returns array, so use [0] to get the data.
+    console.log(user[0].userName);
 });
 
 app.post('/debug/register', async (req, res) => {
-    // Pass in the POST request and validate it inside the validate() function.
-    if (validateRegistration(req.body)) { // If the function returns "true", do the following:
-        // console.log('✓  Validated registration form data.');
-        // Check the database for the requested email address to see if it's already in use:
-        const email = await User.query()
-            .select('userEmail')
-            .where('userEmail', req.body.email)
-            .first();
-        // Check the database for the requested username to see if it's already in use:
-        const username = await User.query()
-            .select('userName')
-            .where('userName', req.body.username)
-            .first();
-        // If both the username and email address are available, do the following:
-        if (!email && !username) {
-            // console.log('✓  Requested email address is available: ' + req.body.email);
-            // Insert the following data into the "users" table:
-            await knex('users').insert({
-                userName: req.body.username,
-                userEmail: req.body.email,
-                userPassword: await bcrypt.hash(req.body.password, 10), // Has the password with Bcrypt.
-                createdAt: new Date().toISOString().slice(0, 19).replace('T', ' ') // Create a proper DATETIME string.
-            });
-            console.log('✓  Requested new user.')
-        } else {
-            if (email) {
-                // If the email already exists inside the datbase, do the following:
-                console.log('✗  Email unavailable.');
-            } else if (username) {
-                // If the username already exists inside the datbase, do the following:
-                console.log('✗  Username unavailable.');
+    if(validateData(req.body)) {
+        let emailStatus = await findUserByEmail(req.body.email)
+        let usernameStatus = await findUserByUsername(req.body.username);
+        let passwordStatus = (req.body.password === req.body.confirm);
+        let codeStatus = await findUserByCode(req.body.code);
+
+        if (!emailStatus && !usernameStatus) {
+            if (passwordStatus) {
+                if (codeStatus) {
+                    await knex('users').insert({
+                        userName: req.body.username,
+                        userEmail: req.body.email,
+                        userPassword: await bcrypt.hash(req.body.password, 10),
+                        userCode: req.body.code,
+                        friendCode: Math.floor(Math.random() * 900000) + 100000,
+                        createdAt: new Date().toISOString().slice(0, 19).replace('T', ' ')
+                    });
+                } else {
+                    console.log('Bad code.');
+                };
+            } else {
+                console.log('Bad password.');
             };
+        } else if (emailStatus && usernameStatus) {
+            console.log('Email and username not available.');
+        } else if (!emailStatus && usernameStatus) {
+            console.log('Username not available.');
+        } else if (emailStatus && !usernameStatus) {
+            console.log('Email is not available.');
         };
-        // If everything is OK, do the following:
-        res.json({ message: 'Registered user.' });
-    } else {
-        // console.log('✗  Registration form data is invalid.');
-        // If the username, email address, and/or password is invalid (i.e. missing, empty), do the following:
-        res.json({ message: 'Cannot register user.' });
     };
+
+    res.sendStatus(200);
 });
 
 app.post('/debug/login', async (req, res) => {
-    // If the form data contains valid strings...
-    if(validateData(req.body)) {
-        // ...retrieve the user's profile information from the database...
-        findUserByEmail(req.body.email)
+    if(validateData(req.body)) { // Check for valid strings
+        findUserByEmail(req.body.email) // Pull user profile from db
             .then((result) => {
-                console.log('Found a user.');
-                // ...and confirm whether or not the passwords are a match.
-                comparePasswords(req.body.password, result.userPassword)
+                let id = result.id;
+
+                comparePasswords(req.body.password, result.userPassword) // Bcrypt compare passwords
                     .then((result) => {
-                        if(result) {
-                            console.log('Matched both passwords.');
-                        } else {
-                            console.log('Failed to match passwords.');
+                        if(result) { // Password compare passed
+                            res.cookie('userId', id, {
+                                httpOnly: true,
+                                signed: true
+                            });
+                            res.json('GOOD')
+                            console.log('Logged in: ID #' +  id)
+                        } else { // Password compare failed
+                            return;
                         };
                     });
             });
     } else {
-        console.log('BAD')
+        res.json('BAD');
     };
-
-    res.json('GOOD')
 });  
 
 /* =============================================================

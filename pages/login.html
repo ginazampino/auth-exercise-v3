@@ -32,7 +32,7 @@
             console.log('Password: ' + passwordInput);
 
             // axios.post('/debug/login', { email: emailInput });
-            axios.post('/debug/login', { email: emailInput, password: passwordInput });
+            axios.post('/debug/login', { email: emailInput, password: passwordInput }, { withCredentials: true });
         });
     </script>
 </html>
